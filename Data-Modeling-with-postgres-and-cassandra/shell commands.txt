@@ -58,3 +58,57 @@ The important flags that are used with grep:
 -l : prints the names of files that contain matches, not the matches
 -v : invert the match, that is, prints out the non-matching lines
 -h : Do not print the names of files whe  searching nultiple files
+----------------------------------------------------------------------------------
+
+head -n 5 text.csv > top.csv ==> writes the top 5 lines in text.csv into top.csv
+
+cut -f 2 -d , text.csv | grep -v Tooth ==> this gets the second field of text.csv and pass it as input to "grep"
+command on the right(this outputs non-matching lines that dont have the text "Tooth").
+
+wc ==> returns the number of characters, words and lines in a file
+----------------------------------------------------------------
+The important flags for wc(only use one at a time):
+-c : returns number of characters in a file
+-w : returns number of words in a file
+-l : returns number of characters in a file
+--------------------------------------------------------------------
+
+grep 2017-07 text.csv | grep -v Tooth | wc -l ==> returns the number of records in July while eliminating the 
+header with the word "Tooth".
+
+head -n 3 *.csv ==> returns the first 3 lines of any csv file in the present working directory
+
+
+------------
+Wildcards
+-----------
+
+* : returns 0 or more matching characters
+? : matches a single character
+[...] : matches any character within the bracket
+{*.txt, *.csv} : matches any file whose name ends with txt and csv. but not .pdf files
+
+------------
+Sorting
+--------------
+Important flags:
+
+-n : used to sort numerically in ascending order
+-r : used to reverse the order of the output(descending order)
+-b : tells the command to ignore leading blanks
+-f : tells it to be case-insensitive
+
+cut -d, -f 2 seasonal/winter.csv | grep -v Tooth | sort -r ==> returns the elements of tooth column in descending order
+
+uniq command : remove duplicates of adjacent elements. Hence, it does not drop duplicates of faraway elements.
+Therefore, its usually used with "sort" command to put similar elements adjacent to one another and "uniq" applied
+to get rid of duplicates(This way we ensure to only have unique elements in the output).
+
+cut -d , -f 2 seasonal/winter.csv | grep -v Tooth | sort | uniq -c ==> returns unique elements and their 
+respective number of occurence.
+
+
+
+
+
+
