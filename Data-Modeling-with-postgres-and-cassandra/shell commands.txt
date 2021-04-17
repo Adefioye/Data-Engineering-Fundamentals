@@ -1,0 +1,60 @@
+MANIPULATING FILES and DIRECTORIES
+----------------------------------------------------------
+
+pwd ==> prints out the absolute path of the file
+
+cd ~/../. ==> change directory to the home directory
+
+ls ~ ==> list files/ directories in the home directory
+
+cd ~ ==> changes directory to te home directory
+
+cp [this_file_name] [another_file_name] ==> copy this_file_name into another_file_name in the same directory
+
+cp [this_filepath] [that_filepath] backup ==> this copy this_filepath and that_filepath into backup directory
+
+mv autumn.csv winter.csv .. ==> This moves autumn.csv and winter.csv up one level to the directory above
+
+rm [file1] [file2] [directory/file3] ==> This removes any kind of file
+
+rmdir [dir_path] ==> This removes empty directory path specified
+
+mkdir ==> this makes a new directory in the filepath
+
+MANIPULATING DATA
+------------------------------------------------------------------
+
+cat agarwal.txt ==> This reads the content of all files in agarwal.txt
+
+less seasonal/spring.csv seasonal/summer.csv ==> This allows for us to print out content of the 2 files piece
+by piece. (:n) can be used to move to the second file(next file) while (:p) can be used to the previous file.
+
+head text.csv ==> This prints out the first 10 content of the file
+
+head -n 5 text.csv ==> This prints out the first-five lines of the text.csv
+
+ls -R ==> This recursively prints out all of the directories and files and content of the sub-directories
+
+ls -F ==> This prints out directories, files and contents of subirectories. In addition, it prints out / after every
+directory and * after every runnable program.
+
+man tail ==> provides the details of the tail command.
+
+cut -f 2-5, 8 -d , text.csv ==> This returns columns 2 through 5 and 8 while using a comma delimiter
+
+history ==> provides an account of the commands that have been run on the terminal. Each has a serial number 
+placed in front of it based on the order in which they are typed on the terminal.
+
+!55 ==> This runs the command on serial number 55 on the output of the history command
+
+!head ==> This runs the most recent use of the head command in the terminal's history.
+
+grep biscuit txt.csv ==> This outputs matching lines that contain the text "biscuit" in txt.csv
+--------
+The important flags that are used with grep:
+-n : This output line numbers the matching lines
+-c : prints a count of matching lines rather than the lines themselves
+-i : makes the search CASE INSENSITIVE
+-l : prints the names of files that contain matches, not the matches
+-v : invert the match, that is, prints out the non-matching lines
+-h : Do not print the names of files whe  searching nultiple files
