@@ -1,0 +1,39 @@
+Basic intro
+-----------------------------------
+grep : returns output based on lines that match the "passed input"
+cat : reads out all of the content of a file
+tail \ head -n: returns top / last n records based in a file
+wc : performs a word or line count based on (flags -w, -l)
+sed : performs pattern-matched string replacement
+--------------------------------------------------------------------
+
+grep -r ==> To search a file recursively
+
+grep 'Sydney Carton\|Charles Darnay' two_cities.txt | wc -l ==> This helps to find the number
+of lines with the words (Sydney Carton and Charles Darnay)
+
+cat two_cities.txt | egrep 'Sydney Carton|Charles Darnay' | wc -l ==> egrep works just like 
+above. It has the added benefit of not requring the use of "escape characters".
+
+-------------------------
+Creating a bash script
+-------------------------------
+
+#!/usr/bash ==> This is used to start every bash script
+
+cat soccer_scores.csv | sed 's/Cherno/Cherno City/g' | sed 's/Arda/Arda United/g' > soccer_scores_edited.csv
+==>
+THe above is used to replace Cherno & Arda to Cherno City & Arda United respectively globally(rep by "g" keyword)
+.If g is missed in the keyword, Only the first instance of the pattern string is replaced.
+
+2 > /dev/null : This redirects STDERR to be deleted.
+1 > /dev/null : This would be STDOUT
+
+ARGV : This is the array of all arguments given to the program
+$@ and $* : give all the arguments together
+$# : gives the number of arguments
+
+cat hire_data/*.csv | grep $1 > $1.csv ==> Use to extract subset of data with "cityname" passed
+as first argument to extract data with the "cityname".
+
+

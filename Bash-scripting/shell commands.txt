@@ -106,9 +106,26 @@ to get rid of duplicates(This way we ensure to only have unique elements in the 
 
 cut -d , -f 2 seasonal/winter.csv | grep -v Tooth | sort | uniq -c ==> returns unique elements and their 
 respective number of occurence.
+-----------------------------------------------------------------------------------------------------------
+echo ==> This is used for printing out variables/ values on the shell
 
+echo $Variable ==> $ sign is added to print out the content of the variable
 
+shell variable ==> These are like local variable in a programming language
 
+training=seasonal/winter.csv (training is a shell variable. the "=" sign is used without any spacing)
+-------------------------------------------------
+structure of for loop is as shown below:
+
+for variable in .......; do body; done
+----------------------------------------------
+
+$@ ==> This is useful for passing filenames to scripts
+
+if unique-lines.sh  contains sort $@ | uniq
+
+bash unique-lines.sh seasonal/summer.csv ==> This parses the filename instead of $@. $@ is like a placeholder
+for the filename(s).
 
 
 
