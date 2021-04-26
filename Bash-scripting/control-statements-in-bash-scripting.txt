@@ -1,0 +1,168 @@
+/*	CONTROL STATEMENT in BASH SCRIPTING	*/
+
+BASIC IF statement
+------------------------
+if [ CONDITION ]; then
+	# SOME CODE
+else
+	# SOME OTHER CODE
+fi
+--------------------------------------
+it is very important to do the following
+
+-- provide spaces between square brackets and conditional elements
+-- provide semi-colon after close-bracket as in this ];
+-- provide "fi" at the end of the close-bracket
+
+Basic example
+--------------------------
+x="Queen"
+if [ $x == "King" ]; then
+	echo "$x is a King!"
+else
+	echo "$x is not a King!"
+fi
+---------------------------------------
+Arithmetic IF statements can use double-parenthesis (option 1)
+------------------------------------------------------------
+x=10
+if (($x > 5)); then
+	echo "$x is more than 5!"
+fi
+-----------------------------------------------
+Arithmetic IF staements can also use square brackets and an arithmetic flag rather than (>,
+<, =, !=, etc):
+
+# -eq for 'equal to'
+# -ne for 'not equal to'
+# -lt for 'less than'
+# -le for 'less than or equal to'
+# -gt for 'greater than'
+# -ge for 'greater than or equal to'
+
+Arithmetic IF statements (option 2)
+---------------------------------------------------------------
+x=10
+if [ $x -gt 5 ]; then
+	echo "$x is more than 5!"
+fi
+---------------------------------------------------------------
+OTHER Bash conditional flags
+----------------------------------------------------------
+# -e if the file exists
+# -s if the file exists and has size greater than zero
+# -r if the file exists and is readable
+# -w if the file exists and is writable
+-------------------------------------------------------------------
+Using AND and OR in Bash
+-----------------------------------------
+# && for AND
+# || for OR
+--------------------------------------------------------
+Using MULTIPLE CONDITIONS
+--------------------------------------------------
+(OPTION 1) -- Using single square bracket
+x=10
+if [ $x -gt 5 ] && [ $x -lt 11 ]; then
+	echo "$x is more than 5 and less than 11!"
+fi
+------------
+(OPTION 2) -- Using double square bracket
+x=10
+if [[ $x -gt 5 && $x -lt 11 ]]; then
+	echo "$x is more than 5 and less than 11!"
+fi
+-------------------------------------------------
+Using command line program in conditionals
+------------------------------------------
+if grep -q Hello words.txt; then
+	echo "Hello is inside!"
+fi
+------------------------------------------------
+
+Lets extract the accuracy component of the file below and move them into the folder good_models and bad_models
+-----------------------------------------------------------------------------------------------------------
+Model Name: KNN
+Accuracy: 89
+F1: 0.87
+Date: 2019-12-01
+ModelID: 34598utjfddfgdg
+---------------------------------------------------
+accuracy=$(grep Accuracy $1 | cut -d : -f 2)
+
+if [ $accuracy -gt 90 ]; then
+    mv $1 good_models/
+fi
+
+if [ $accuracy -lt 90 ]; then
+    mv $1 bad_models/
+fi
+---------------------------------------------------------------------------------------------------------
+
+Chech for the words "SRVM_" and "vpt" from a file and if they are both present move the files to good_logs folder
+--------------------------------------------------------------------
+# Create variable from first ARGV element
+sfile=$1
+
+# Create an IF statement on sfile's contents
+if grep -q 'SRVM_' $sfile && grep -q 'vpt' $sfile ; then
+	# Move file if matched
+	mv $sfile good_logs/
+fi
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+FOR and WHILE LOOPS
+-------------------------------------------------
+FOR LOOP
+----------------------
+for condition
+do
+  (expression)
+done
+-----------------------------------------------------
+There is a neat way of creating numeric range in bash called "brace expansion"
+# {START..STOP..INCREMENT} ; INCREMENT defaults to 1 if not specified
+--------------------------------------------------------------------------
+WHILE LOOP
+------------------------------------
+x=1
+while [ $x -le 3 ]; 
+do
+  echo $x
+  ((x+=1))
+done
+----------------------------------------------------------------------------------
+
+CASE statements for multiple conditionals
+-----------------------------------------------------------
+CASE 'STRINGVAR' in
+	PATTERN1)
+	COMMAND1;;
+	PATTERN2)
+	COMMAND2;;
+	*)
+	DEFAULT COMMAND;;
+ESAC
+----------------------------------------------------------------------------------------
+EXAMPLE: Using CASE statement to find files with tree-based algo and move to tree_models folder and delete
+every other file that dont contain them
+---------------------------------------
+
+for file in model_out/*
+do
+    case $(cat $file) in
+      *"Random Forest"*|*GBM*|*XGBoost*)
+      mv $file tree_models/ ;;
+      *KNN*|*Logistic*)
+      rm $file ;;
+      *) 
+      echo "Unknown model in $file" ;;
+    esac
+done
+
+
+
+
+
+
