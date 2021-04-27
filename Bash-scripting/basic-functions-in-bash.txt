@@ -1,0 +1,80 @@
+/*	BASIC FUNCTIONS IN BASH	*/
+
+Syntax of a bash function:
+
+function_name () {
+	#function code
+	return #something
+}
+
+---------------------------------------------
+EXAMPLE
+-------------------
+# Create a function in a script
+
+function return_percentage () {
+
+  # Calculate the percentage using bc
+  percent=$(echo "scale=2; 100 * $1 / $2" | bc)
+
+  # Return the calculated percentage
+  echo $percent
+}
+
+# Call the function with 456 and 632 and echo the result
+return_test=$(return_percentage 456 632)
+echo "456 out of 632 as a percent is $return_test%"
+-----------------------------------------------------------------------------
+
+# Create a function with a local base variable
+function sum_array () {
+  local sum=0
+  # Loop through, adding to base variable
+  for number in "$@"
+  do
+    sum=$(echo "$sum + $number" | bc)
+  done
+  # Echo back the result
+  echo $sum
+  }
+# Call function with array
+test_array=(14 12 23.5 16 19.34)
+total=$(sum_array "${test_array[@]}")
+echo "The total sum of the test array is $total"
+-------------------------------------------------------------------------------------
+SCHEDULING SCRIPTS WITH CRON
+--------------------------------------
+# To schedule a cronjob, there are 5 stars to set. one for each time unit below
+
+min h day-of-mth mth day-of-wk (RUN the bash script)
+
+# The default, * means "every"
+
+EXAMPLE:
+
+# 15 14 * * 7 bash.sh (This means the job is carried out 15minn past 2pm, * (every day of month, every
+of year). Last star is day 7( on Sundays)). Overall, Run job 2:15pm every sunday.
+-----------------------------------------------------------------------------
+ADVANCED CRONJOBS
+---------------------------------
+To run sth multiple times per day or every 'X' time increments. This is also possible.
+
+# Use a comma for specific intervals
+15,30,45 * * * * will run (15mins, 30mins and 45mins mark of every hour specified by the second star)
+
+# Use a slash for 'every X increment'
+*/15 * * * * run evry 15 mins. every hour/ day.
+--------------------------------------------------------
+FIRST CRONJOB
+-----------------------------
+1) type in terminal: cronjob -e (to edit list of cronjobs), it may ask what editor we want to use "nano" is an
+easy option.
+2) create the cronjob: 
+# 30 1 * * * extract_data.sh
+3) exit the editor to save it (using ctrl O and ctrl X). After this, there is a message in the terminal stating
+crontab: installing new crontab.
+4) To check if the cronjob is currently programmed. crontab -l
+
+
+
+
