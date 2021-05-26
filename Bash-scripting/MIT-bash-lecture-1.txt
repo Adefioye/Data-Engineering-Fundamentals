@@ -31,5 +31,6 @@ $$v--> This perhaps print out program id
 
 >> --> To append
 
+image{jpg,png} with TAB expands to image.jpg image.png
 
 
