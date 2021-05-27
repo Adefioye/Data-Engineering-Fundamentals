@@ -33,4 +33,14 @@ $$v--> This perhaps print out program id
 
 image{jpg,png} with TAB expands to image.jpg image.png
 
+ls project? --> This prints out directories with name project1 and project9
+
+touch foo{,1,2,10} --> expands to foo foo1 foo2 foo10
+
+touch project{1,2}/src/test/test{1,2,3}.py --> This gives a cartesian product
+
+diff <(ls foo) <(ls bar) --> Difference between directory foo and bar
+
+grep -R foobar --> This goes through entire dirctory recursively
+
 
