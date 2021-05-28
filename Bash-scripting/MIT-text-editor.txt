@@ -1,0 +1,13 @@
+VIM
+----------------------------
+On normal mode:
+:q --> quit without saving (technically means close the current window)
+:w --> quit and saving the file
+:sp --> Split the page into 2 with the file in both pages
+:tabnew --> Open a newtab
+:qa --> this quits all current windows
+HJKL --> for moving left, down, uplh , right respectively.
+w key --> this moves cursor forward by one word
+b key --> This moves the cursor back by one word
+e key --> THis moves cursor to end of the word
+
