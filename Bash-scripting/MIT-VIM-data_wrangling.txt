@@ -1,0 +1,96 @@
+VIM
+----------------------------
+On normal mode:
+:q --> quit without saving (technically means close the current window)
+:w --> quit and saving the file
+:sp --> Split the page into 2 with the file in both pages
+:tabnew --> Open a newtab
+:qa --> this quits all current windows
+HJKL --> for moving left, down, uplh , right respectively.
+w key --> this moves cursor forward by one word
+b key --> This moves the cursor back by one word
+e key --> THis moves cursor to end of the word
+
+---------------------------------------------------------------------------
+DATA WRANGLING
+------------------------------------
+
+cat ssh.log | sed 's/.*Disconnected from//' --> This is a substitute expression that looks for the pattern
+.*Disconnected from and replace it with an empty string.
+
+echo 'bba' | sed 's/[ab]//' --> This matches the pattern 'a' or 'b' once and replace with an empty string.
+
+echo 'bba' | sed 's/[ab]//g' --> This matches the pattern 'a' or 'b' on the whole line and replace 
+with an empty string.
+
+echo 'abcaba' | sed 's/(ab)*//g' --> The parentheses here is taken literally. To make the shell program take the
+parentheses as a group, we use the flag -E.
+
+sort | uniq -c --> This returns the number of duplicates per line
+
+sort | uniq -c | sort -nk1,1 --> This sorts by number especially for row 1 column 1.
+
+awk --> THis ia a column-based stream processor unlike 'sed' which is a text-stream processor. It also helps us edit text
+
+awk '{print $2}' --> This helps us print the second column of the input data
+
+paste -s d --> This helps us parse the data as a single line with the delimiter comma.
+
+awk '$1 == 1 && $2 ~ /^c.*e$/ {print $0}' --> This prints out the line where column 1 is 1 and column 2 
+starts with c and ends with e
+
+awk '$1 != 1 {print $1}' --> This prints column 1 that are not 1
+
+-------------------------------------------
+GIT lectures
+---------------------------------------------------------
+git cat-file -p hashkey --> This is used to dig in through the internals of the object store in git.
+
+git log --all --graph --decorate --> This gives info and metadata of our previous commit
+
+git log --all --graph --decorate --oneline --> This gives a more compact representation of the log metadata info
+
+git checkout hashkey --> This points to snapshot with the specified hashkey while neglecting any non-committed
+changes manually inputed in the file.
+
+git branch cat --> This creates a branch on the HEAD(that is the snapshot we are currently looking at)
+
+git remote add origin <repo-url/local-folder-name> --> This makes the current working local repo/directory to be
+aware of a remote repo/directory.
+
+git push origin master:master --> This pushes all of the content in the master branch of the current local repo
+to the master branch of the remote repo.
+
+git branch --set-upstream-to=origin/master --> This allows the current local master branch to track remote master
+branch. After this has been set, we can always just send "git push" to send the changes from the local machine
+to the remote machine.
+
+git branch -vv --> To list out the branch in the current repo in a reverse way
+
+git fetch <remote-name> --> This brings in the changes from remote machine and add it to local machine. Only use
+"git fetch" without remote-name when there is only one remote. This does not make changes to our local history.
+Hence, the HEAD--> master branch is not tampered with
+
+git merge --> With this, we are able to make the local history untouched by "git fetch" to point to the same place
+where origin/master of the remote machine points to.
+
+git clone --shallow --> This clones just the latest snapshot of the repo we are trying to copy to our local machine
+. This is particularly useful in order to avoid copying gigantic rep with a billion/million commits. This has the
+disadvantage of missing out on the version history of the document.
+
+git add -p --> THis gives us interactive staging
+
+git diff --cached --> This allows us to see the diff btw changes added and the previous state of the file/repo.
+
+git blame --> Helps us determine who edited what part of a line and the corresponding commit that made changes to
+that file and also the message of the commit.
+
+git stash --> To remove the changes just made to a file
+
+git stash pop --> To readd the changes we just removed with "git stash"
+
+git bisect --> To check where unit test failed
+
+
+
+
