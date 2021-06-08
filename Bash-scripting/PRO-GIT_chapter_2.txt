@@ -1,0 +1,39 @@
+PRO GIT
+-------------------------------
+CHAPTER 2
+--------------------
+.gitignore file --> This is useful for housing info regarding files that we dont want git to track or commit
+or even show as untracked file.
+
+The following patterns can be placed in a .gitignore file.
+---------------------------------------------------------------------
+# ignore all .a files
+*.a
+
+# Track lib.a file even though you are ignoring .a files above
+!lib.a
+
+# Only ignore the TODO file in the current directory, not subdir/TODO
+/TODO
+
+# Ignore all files in any directory named build
+build/
+
+# Ignore doc/notes.txt, but not doc/server/arch.txt
+doc/*.txt
+
+# Ignore all .pdf files in doc/ directory and its subdirectories
+doc/**/*.pdf
+-------------------------------------------------------------------------------
+git rm --cached README --> This allows git to remove the 
+
+git log -p (--patch) -1 (-n) --> THis return the difference introduced in each commit
+
+git log --stat --> This provides info about the commit history, the files modified and the number of insertions 
+and deletions. 
+
+git log --pretty=format:"%h %s" --graph
+---> THis is another way of getting the commit log history. just like git --all --graph --decorate --oneline.
+In this case, this just prints out the log history with 2 basic info such as the abbbreviated hash and
+commit message.
+
