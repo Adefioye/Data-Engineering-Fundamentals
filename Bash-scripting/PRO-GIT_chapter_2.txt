@@ -37,3 +37,24 @@ git log --pretty=format:"%h %s" --graph
 In this case, this just prints out the log history with 2 basic info such as the abbbreviated hash and
 commit message.
 
+git commit --amend --> To amend last commit with unstaged file. This is done without creating a new commit
+
+git restore --staged file_name --> This helps to unstage a staged file
+
+git restore file_name --> This helps to unmodify a modified file
+
+git remote add <shortname> <url_name> --> This helps to add a remote repository into the local repository
+
+git fetch --> Pull data from remote repository
+
+git push origin master --> This push to a remote repository
+
+git remote show origin --> This inspect remote repository
+
+git remote rename from_name to_name --> FOr renaming a remote repository named
+
+git remote remove remote_name --> For remote name removal
+
+
+
+
