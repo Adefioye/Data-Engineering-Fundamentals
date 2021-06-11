@@ -54,6 +54,10 @@ git remote show origin --> This inspect remote repository
 git remote rename from_name to_name --> FOr renaming a remote repository named
 
 git remote remove remote_name --> For remote name removal
+------------------------------------------------------------------------
+TAGGING
+-----------------------------------------------
+
 
 
 
