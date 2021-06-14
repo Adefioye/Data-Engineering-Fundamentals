@@ -12,6 +12,35 @@ git switch -c <branch_name> --> This works the same as above
 git merge <branch_name> --> After checking out to main branch. This merge main branch with the 
 branch_name
 
+git branch -d <branch_name> --> For deleting the branch_name
+-----------------------------------------------------------------------------
+BRANCH MANAGEMENT
+------------------------------------------------------------------------
+git branch -v --> To list the lat commit on each branch in the repository
+
+git branch --merged --> This tells us the branch that have been merged with the main branch. The branch
+names listed out can be deleted with "git branch -d <branch_name>"
+
+git branch --no-merged --> This tells us the branch that have not yet been merged with the main branch.
+The branch names listed out cannot be deleted with "git branch -d <branch_name>". To forcefully delete these
+files, the -D flag is used as shown "git branch -d <branch_name>"
+
+git branch --no-merged main --> The main argument can be passed to avoid checking out of the current branch
+we are on.
+
+git branch --move <old_branch_name> <new_branch_name>
+
+git branch --all --> This lists out all branches in the local and remote hosts
+
+git push --set-upstream origin <new_branch_name> --> To push <new_branch_name> to remote host
+
+git push origin --delete <new_branch_name> --> "git branch --move" does not delete the old_branc_name from 
+the remote host. so we run the code to delete the old_branch_name on remote host.
+
+
+
+
+
 
 
 
