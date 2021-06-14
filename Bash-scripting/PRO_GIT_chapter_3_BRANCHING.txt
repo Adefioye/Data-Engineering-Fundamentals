@@ -1,0 +1,18 @@
+BRANCHING
+-------------------------------------------------------------------------------------------
+
+git branch <branch_name> --> This creates a branch with the branch_name
+
+git checkout <branch_name> --> This allows us to move into branch_name
+git switch <branch_name> can be used now in place of git checkout <branch_name>
+
+git checkout -b <branch_name> --> This automatically creates branch_name and moves into the branch
+git switch -c <branch_name> --> This works the same as above
+
+git merge <branch_name> --> After checking out to main branch. This merge main branch with the 
+branch_name
+
+
+
+
+
