@@ -1,0 +1,63 @@
+For JSON:
+mongoimport, mongoexport
+
+For BSON:
+mongorestore, mongodump
+----------------------------------------------------
+EXPORT
+---------------------------------------------------------
+Exports data in BSON
+mongodump --uri "<Atlas Cluster URI>"  
+
+Exports data in JSON
+mongoexport --uri "<Atlas Cluster URI>" 
+            --collection=<collection name>
+            --out=<filename>.json
+-------------------------------------------------------
+IMPORT
+--------------------------------------------------------
+Import data in BSON dump
+mongorestore --uri "<Atlas Cluster URI>" 
+             --drop dump
+
+Import data in JSON dump
+mongoimport --uri "<Atlas Cluster URI>" 
+            --drop=<filename>.json
+
+-----------------------------------------------------------------
+MONGO SHELL
+------------------------------
+show dbs --> This shows the database name that are in the cluster
+
+use sample_training --> This helps us navigate to the current dbs
+
+show collections --> THis shows the collections in the db navigated to
+
+db.<collection_name>.find( { <key-value pairs> } ) --> This is a binder used in the shell to search
+collections in a mongodb
+
+it --> THis means "iterate through". Particularly useful for iterating through the cursor
+
+cursor --> This is a pointer to our result set
+
+pointer --> This is the direct address to the data in memory
+
+db.zips.find({"state": "NY"}).count() --> This returns the number of documents that match the query
+
+db.zips.find({"state": "NY", "city": "ALBANY"}).pretty() --> This prints out the result in a nice and
+more readable way
+
+---------------------------------------------------------------------------------------------
+CREATING AND MANIPULATING documents
+------------------------------------------------
+ObjectId() --> This is the default value for the _id field unless otherwise specified
+
+_id --> This serves as a unique identifier for a document in a collection
+
+db.collections.insert([{"_id": 1, "test": 1}, {"_id": 2, "test": 3}])
+
+Use {"ordered": false} --> To disable ordered insert
+
+Use tools follow by db.tractors.insert(<doc>) creates tools.tractors namespace
+
+
