@@ -60,4 +60,170 @@ Use {"ordered": false} --> To disable ordered insert
 
 Use tools follow by db.tractors.insert(<doc>) creates tools.tractors namespace
 
+To update document using mongoshell, we use updateOne() and updateMany()
+
+MQL Update operators
+-------------------------------
+To increment value of fields by certain amount
+{"$inc": {"pop": 10, "field2": <increment_value>}}
+
+To set new value for a field
+{"$set": {"pop": 17630, "field2": <new_value>, ....}}
+
+To add an element to an array field
+{"$push": <field1>: <value1>, ......}
+---------------------------------------------------------------------------
+To delete documents, we use deleteOne() and deleteMany() operators
+
+It is best to use deleteOne() when trying to delete a document with a specific "_id" unique value. This
+approach also works nicely for findOne() and updateOne(). This way we are sure we are only performing
+operation on just one document.
+
+db.<collection_name>.drop() --> For deleting collection with the given name
+
+Update operators($set, $unset, $inc) provides ways to modify data in the database
+
+Query operators provide additional ways to locate data in the database
+
+$ has multiple uses 
+Precedes MQL operators
+Precedes aggregation pipeline stages
+Allows access to field values
+------------------------------------------------------------------------------------
+COMPARISON operators
+-----------------------------------------------------------------------
+comparison operators allow us to fetch data within a certain range
+$eq --> =
+$ne --> not equal to
+$gt --> >
+$lt --> <
+$gte --> greater than or equal to
+$lte --> less than or equal to
+
+db.zips.find({"pop": {"$lt": 1000}}).count() --> Finds the number of documents with "pop" < 1000
+
+--------------------------------------------------------------------------------------------------
+LOGICAL operators
+---------------------------------------------
+$and --> Match all the specified query clauses
+$or --> Match at least one of the query clauses
+$nor --> Fail to match both given clauses
+$not --> Negates the query requirement
+
+Implicit $and operator
+{"sector": "Mobile Food Vendor - 881", "result": "Warning"}
+
+Using explicit $and operator
+{"$and": [{"sector": "Mobile Food Vendor - 881"}, {"result": "Warning"}]}
+
+When to use explicit $and?
+-----------------------------------
+This is useful when we use same operator more than once
+{ "$or" :[ { "dst_airport": "KZN" },{ "src_airport": "KZN" }] }, { "$or" :[ { "airplane": "CR2" },{ "airplane": "A81" } ]}
+
+The above will produce unexpected results except when we specifically use $and operator
+
+{"$and": [{ "$or" :[ { "dst_airport": "KZN" },{ "src_airport": "KZN" }] }, { "$or" :[ { "airplane": "CR2" },{ "airplane": "A81" } ]}]}
+
+db.companies.find({"$or": [{"$and": [{"founded_year": 2004}, {"$or": [{"category_code": "social"}, {"category_code": "web"}]}]}, {"$and": [{"founded_month": 10}, {"$or": [{"category_code": "social"}, {"category_code": "web"}]}]}]})
+----------------------------------------------------------------------------------------------------------------------------------------------
+EXPRESSIVE QUERY OPERATOR 
+-------------------------------------------------------------
+$expr --> allows for the use of aggregation expressions within a query language
+      --> It also allows the use of variables and conditional statements
+
+{"$expr": {"$eq": ["$start station id", "$end station id"]}}
+
+db.companies.find({"$expr": {"$eq": ["$permalink", "$twitter_username"]}}).count()
+
+-------------------------------------------------------------------------------------
+ARRAY OPERATORS and PROJECTIONS
+---------------------------------------------------------------------------
+$push --> Allows us to add an element to an array
+      --> Allows creation of an array field if it was previously not present in the document
+
+$size --> This returns cursor with documents with an array of the given length
+
+$all --> This returns a cursor with documents with the given array regardless of the order of elements in the array
+
+db.listingsAndReviews.find({"$and": [{"$expr": {"$gt": ["$accommodates", 6]}}, {"reviews": {"$size": 50}}]})
+
+db.listingsAndReviews.find({"property_type": "House", "amenities": {"$all": ["Changing table"]}}).count()
+-------------------------------------------------------------------------------------------------------------
+PROJECTIONS
+------------------------------------------
+To project(select) a few fields in the collection, we use the below
+db.<collection>.find({ <query> }, { <projection> })
+Specify 1s for fields to be SELECT(PROJECT)
+Specify 0s for fields to be EXCLUDED
+
+db.<collection>.find({ <query> }, { <field1>: 1, <field2>: 1 })
+
+Either 1s or 0s can only be specified to the fields to be projected or excluded. Both should not be combined.
+
+The only time we are allowed to mix 1s and 0s is when we are to set 0 for "_id" because it is returned by DEFAULT.
+
+$elemMatch --> To search based on the element of an array field
+
+db.companies.find({"offices": {"$elemMatch": {"city": "Seattle"}}}).count()
+
+USING DOT NOTATION
+-------------------------------
+DOT is used to query elements in array and subdocuments in a collection
+
+db.trips.find({"start station location.coordinates.0": {"$lt": -74}}).count() --> Number of trips to the west of -74 longitude coordinates
+
+db.inspections.find({"address.city": "NEW YORK"}).count()
+------------------------------------------------------------------------------------------
+AGGREGATION FRAMEWORK
+-------------------------------------------------------
+This is another way to query data apart from the MQL
+
+In aggregation framework, we use $group, $match, $projection compute, reshape
+In MQL, we use filter, update
+
+Syntax of $group
+
+{"$group": 
+      {"_id": "$address.country", // Group by expression
+      <field1>: { <accumulator1>: <expression1>},
+
+      }}
+
+Let see a MQL query
+
+db.listingsAndReviews.find({ "amenities": "Wifi" },
+                           { "price": 1, "address": 1, "_id": 0 }).pretty()
+
+The equivalent aggregation query
+
+db.listingsAndReviews.aggregate([
+                                  { "$match": { "amenities": "Wifi" } },
+                                  { "$project": { "price": 1,
+                                                  "address": 1,
+                                                  "_id": 0 }}]).pretty()
+-------------------------------------------------------------------------------------------------
+Using sort() and limit() method
+------------------------------------
+sort and limit are CURSOR methods
+
+db.zips.find().sort({ "pop": 1 }).limit(1) --> Sort zips by "pop" field in ascending order and return 1st result
+
+db.zips.find().sort({ "pop": 1 }).limit(1) --> Sort zips by "pop" field in descending order and return 1st result
+
+ db.trips.find({"birth year": {"$ne": null, "$ne": ""}}).sort({"birth year": -1}).limit(1).pretty() --> To get youngest bike rider
+
+ 
+db.trips.createIndex({ "birth year": 1 }) --> To build index on "birth year" to eeficiently query searches based on 
+"conditionals on birth year"
+
+
+
+
+
+
+
+
+
+
 
