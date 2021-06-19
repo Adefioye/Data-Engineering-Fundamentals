@@ -1,0 +1,156 @@
+BASIC CLUSTER ADMINISTRATION
+---------------------------------------------------------------------------
+ps -ef | grep mongo --> This lists out mongo instances currently running on the system
+
+kill <pid> ==> Kill a process with a specific process id
+
+killall mongod --> To kill all currently running processes of mongod instances
+
+default mongod port --> 27017
+                dbpath --> /data/db (stores programs that handle requests and persist data)
+                bind_ip --> localhost (bind to local hist by default)
+                auth -> disabled
+
+To close connection to mongod, we use the following:
+------------------------------------------------------------------------------
+use admin;
+db.shutdownServer();
+----------------------------------------------------------------------------
+EXAMPLE OF CONFIGURATION file
+-------------------------------------------------------------------
+storage:
+  dbPath: "/data/db"
+systemLog:
+  path: "/data/log/mongod.log"
+  destination: "file"
+replication:
+  replSetName: M103
+net:
+  bindIp : "127.0.0.1,192.168.103.100"
+tls:
+  mode: "requireTLS"
+  certificateKeyFile: "/etc/tls/tls.pem"
+  CAFile: "/etc/tls/TLSCA.pem"
+security:
+  keyFile: "/data/keyfile"
+processManagement:
+  fork: true 
+---------------------------------------------------
+mongod --config mongod.conf OR 
+mongod -f mongod.conf
+-------------------------------------------------------------
+BASIC HELPER GROUPS
+---------------------------------
+db.<method>() --> These methods wrap commands that interact with the database
+We could also have db.<collection>.<method>() for dealing with collections in the database
+
+User management
+--------------------------------------------------
+db.createUser()
+db.dropUser()
+
+Collection management
+--------------------------------------------------------------
+db.renameCollection()
+db.collection.createIndex()
+db.collection.drop()
+
+Database management and status
+------------------------------------------------------------------
+db.dropDatabase()
+db.createCollection()
+db.serverStatus()
+
+db.runCommand({ <COMMAND> })
+db.commandHelp( "<command>" )
+-------------------------------------------------------------------------------------------------------------
+
+rs.<method>() --> These methods wrap commands that control replica set deployment and management
+sh.<method>() --> These methods wrap commands that control sharded cluster deployment and management
+-----------------------------------------------------------------------------------------------------------
+LOGGING BASICS
+--------------------------------------------------------
+mongodb has 2 logging facilities for tracking activities in the database
+
+db.getLogComponents() --> To get logging components 
+
+db.setLogLevel(0, "index") --> Change the logging level of index 
+
+db.adminCommand({ "getLog": "global" }) --> View the logs through the mongo shell
+
+tail -f /data/db/mongod.log --> View the logs through the command line 
+-------------------------------------------------------------------------------------------
+MONGODB PROFILER
+-----------------------------------------------------------------
+db.getProfilingLevel() --> To get the profiling level of a database
+
+db.setProfilingLevel(1) --> This sets profiling level to 1. This automatically create system.profile collections 
+that store metadata on slow operations so it can help us in tne debugging process.
+
+db.runCommand({listCollections: 1}) --> To list all collection names including system.profile collection. 
+
+db.setProfilingLevel( 1, { slowms: 0 } ) --> To set "slowms" to 0ms.
+
+CRUD operations, Administrative operations, and Configuration operations are all captured by the database profiler.
+
+However, Network timeouts and WiredTiger storage data are not captured by the profiler - this data is stored in the logs instead.
+--------------------------------------------------------------------------------------------------------------------------
+mongo admin --host localhost:27000 --eval '
+  db.createUser({
+    user: "m103-admin",
+    pwd: "m103-pass",
+    roles: [
+      {role: "root", db: "admin"}
+    ]
+  })
+'
+------------------------------------------------------------------------------------------
+MongoDB SECURITY 
+---------------------------------------------------
+mongo admin -u root -p root123 --> Authenticate as root user
+
+Create a security officer user with userAdmin role in admin database
+db.createUser(
+  { user: "security_officer",
+    pwd: "h3ll0th3r3",
+    roles: [ { db: "admin", role: "userAdmin" } ]
+  }
+)
+
+Create a database administrator
+db.createUser(
+  { user: "dba",
+    pwd: "c1lynd3rs",
+    roles: [ { db: "admin", role: "dbAdmin" } ]
+  }
+)
+
+Grant role to user
+db.grantRolesToUser( "dba",  [ { db: "playground", role: "dbOwner"  } ] )
+
+Show role privileges
+db.runCommand( { rolesInfo: { role: "dbOwner", db: "playground" }, showPrivileges: true} )
+-------------------------------------------------------------------------------------------
+db.createUser({ "user": "m103-application-user", "pwd": "m103-application-pass", "roles": [{"db": "admin", "role": "readWrite"}  ]})
+
+db.createUser({user:"m103-application-user",pwd:"m103-application-pass",roles:[{db:"admin", role:"readWrite"}]})
+--------------------------------------------------------------------------------------------------------------------
+MONGO SERVER TOOLS 
+-----------------------------------------------------
+find /usr/bin/ -name "mongo*" --> This lists out the mongo server tools
+
+
+mongoimport --drop --port 27000 -u "m103-application-user" \
+-p "m103-application-pass" --authenticationDatabase "admin" \
+--db applicationData --collection products /dataset/products.json
+--------------------------------------------------------------------------
+flag --drop prevents the existence of duplicate so as not to create the collection twice by running the command twice
+
+
+
+
+
+
+
+
+
