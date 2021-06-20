@@ -1,0 +1,80 @@
+__The following are the five key problems that represent the vast performance problems in Apache Spark__
+
+- Skew : An imbalance in the size of partitions across all datasets 
+- Spill : The writing of temp files to disk due to lack of memory for processing data
+- Shuffle : The movement of data across executors due to wide transformation
+- Storage : A set of problems directly related to how data is stored on disk
+- Serialization : Distribution of code segments across the cluster
+
+`sc.setJobDescription("Step A-S: Basic Initialization")` --> Used to define spark job sent to the executors
+
+There are 3 common benchmarking approach developers typically use in databricks notebook environment
+---------------------------------------------------------------------------------------------------------
+1. The count() action 
+2. The foreach() action with do nothing lambda 
+3. A noop (or no operation) write 
+
+-----------------------------------------------------------------------------------------------------
+SKEW ISSUE
+----------------------------------------------------------------------------------------
+It can be solved by using:
+1. skew hint which can be called using .hint("skew", "column_name")
+2. AQE(Adaptive query optimization introduced in spark 3)
+
+To use AQE to resolve skew issues, we would have to set the following configurations:
+--------------------------
+Setting on the adaptive features
+spark.conf.set("spark.sql.adaptive.enabled", true)
+
+Ensure that AQE is used to resolve skew in the join operation
+spark.conf.set("spark.sql.adaptive.skewedJoin.enabled", true)
+
+To repartition the data to achieve even data partition distribution
+spark.conf.set("spark.sql.adaptive.advisoryPartitionSizeInBytes", "128m")
+------------------------------------------------------------
+3. Salted join : 
+This is the more complicated option. It becomes really useful when engineers do not have access to 
+Spark 3(that is using AQE feature), or perhaps they do not have access to databricks. In that case, 
+Salted join is a viable option. It has its side effects of splitting small partitions into smaller ones.
+Hence, it can only guarantee the execution of task and not the even duration of all tasks. 
+
+There are like 4 steps needed in using a salted Join:
+1. Create a dataframe for the salt based on a "skew factor". The skew factor is empirically computed
+based on how large the maximum partition size relative to the median partition size.
+2. Cross join the salt table with the 1st table
+3. Cross join the salt table with the second table(perhaps via random assignement)
+4. Cross join result set from step 2 and 3 based on the common salt table id
+-----------------------------------------------------------------------------------------------------------------
+SPILL ISSUE 
+-------------------------------------
+Spill typically involves movement of partition to disk due to lack of memory. This typically 
+increase the disk reads and writes in order to avoid Out-of-memory(OOM) error.
+
+There are a couple of ways spill can be induced:
+1. Increasing spark.sql.files.maxPartitionBytes to higher values(128MB is default)
+2. USing explode() on small array columns
+3. Using Join() and crossJoin() operation
+4. Aggregating a skewed column name 
+
+Spill is a very difficult performance issue to detect. To detect it, one has to hunt for it. To achieve this,
+spillListener is used which is a type of sparkListener(This is turned on when a job is executed in Spark). It
+tracks down from when job is started down to stage and task. It actually feeds the SparkUI with data.
+
+Spill metadata is only available under the details page of each stage, It can be found under 3 headings such as
+Summary metrics, Aggregated metrics by executor and Tasks table. 
+
+Spill data is also under the corresponding query details. 
+
+spillListener is created in scala language but can be implemented in the databricks notebook(I currently do not
+know if it can be implemented in the EMR notebook). However, the link to the implementation can be found below
+http://www.databricks.training/spark-ui-simulator/experiment-6518/v002-S/index.html
+
+What can we do about spill?
+-----------------------------
+Quick answer?!, Allocate more memory per worker! This can be set under cluster management.
+
+Other setting related to skew issue above can also be explored.
+
+
+
+
