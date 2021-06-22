@@ -1,0 +1,172 @@
+REPLICATION 
+------------------------------------------------------------------------------------------------
+How to create replica set, add nodes and check replica status?
+----------------------------------------------------------------------
+Configuration file for the first node(node1.conf):
+
+        storage:
+            dbPath: /var/mongodb/db/node1
+        net:
+            bindIp: 192.168.103.100,localhost
+            port: 27011
+        security:
+            authorization: enabled
+            keyFile: /var/mongodb/pki/m103-keyfile
+        systemLog:
+            destination: file
+            path: /var/mongodb/db/node1/mongod.log
+            logAppend: true
+        processManagement:
+            fork: true
+        replication:
+            replSetName: m103-example
+
+Creating keyfiles and setting permissions on it
+
+        sudo mkdir -p /var/mongodb/pki/
+        sudo chown vagrant:vagrant /var/mongodb/pki/
+        openssl rand -base64 741 > /var/mongodb/pki/m103-keyfile
+        chmod 400 /var/mongodb/pki/m103-keyfile
+
+Creating dbpath for node1 
+
+        mkdir -p /var/mongodb/db/node1
+
+Starting a mongod with node1.conf:
+
+        mongod -f node1.conf
+
+Copying node1.conf to node2.conf and node3.conf:
+
+        cp node1.conf node2.conf
+        cp node2.conf node3.conf
+
+Editing node2.conf using vi: and save and after node2.conf dbpath, port and logpath are changed
+as shown below:
+
+        storage:
+            dbPath: /var/mongodb/db/node2
+        net:
+            bindIp: 192.168.103.100,localhost
+            port: 27012
+        security:
+            keyFile: /var/mongodb/pki/m103-keyfile
+        systemLog:
+            destination: file
+            path: /var/mongodb/db/node2/mongod.log
+            logAppend: true
+        processManagement:
+            fork: true
+        replication:
+            replSetName: m103-example
+
+The above is done on node3.conf:
+
+Creating the data directories for node2 and node3:
+
+        mkdir /var/mongodb/db/{node2,node3} 
+
+Starting mongod processes with node2.conf and node3.conf:
+
+        mongod -f node2.conf
+        mongod -f node3.conf
+
+Connecting to node1:
+
+        mongo --port 27011
+
+Initiating the replicaset:
+
+        rs.initiate()
+
+Creating a user:
+
+        use admin
+        db.createUser({
+        user: "m103-admin",
+        pwd: "m103-pass",
+        roles: [
+            {role: "root", db: "admin"}
+        ]
+        })
+
+Exiting out of the Mongo shell and connecting to the entire replica set:
+
+        exit
+        mongo --host "m103-example/192.168.103.100:27011" -u "m103-admin" -p "m103-pass" --authenticationDatabase "admin"
+
+Getting replica set status:
+
+        rs.status()
+
+Adding other members to replica set:
+
+        rs.add("m103:27012")
+        rs.add("m103:27013")
+
+Getting an overview of the replica set topology:
+
+        rs.isMaster()
+
+Stepping down the current primary:
+
+        rs.stepDown()
+
+
+Popular replication commands:
+
+rs.status()
+rs.isMaster()
+db.serverStatus()['repl']
+rs.printReplicationInfo() --> will only return timestamps for oplog statements;the statements themselves can be found
+in local.oplog.rs. contains information pertaining to the node where the command was run.
+
+---------------------------------------------------------------------------------------------------------------------
+After launching a mongod process to start our arbiter node, We can add it to the replica set using:
+
+rs.addArb("ip_address:port_number")
+
+rs.isMaster() --> To check that it is successfully added 
+rs.remove("ip_address:port_number") --> To remove the arbiter node 
+
+cfg = rs.conf() --> Assigning the configuration to a shell variable 
+
+Editing our new variable cfg to change topology - specifically, by modifying cfg.members:
+
+cfg.members[3].votes = 0
+cfg.members[3].hidden = true
+cfg.members[3].priority = 0
+
+Updating our replica set to use the new configuration cfg:
+
+rs.reconfig(cfg) 
+
+
+mongo --port 27001 -eval 'rs.initiate()'
+
+mongo admin --port 27001 -eval 'db.createUser({
+  user: "m103-admin",
+  pwd: "m103-pass",
+  roles: [
+    {role: "root", db: "admin"}
+  ]
+})'
+
+------------------------------------------------------------------------------------------------
+READS and WRITES ON REPLICA SET 
+---------------------------------------
+We can only read data on the secondary node in order to ensure consistency...
+Writing data to secondary node is not allowed by default
+
+rs.slaveOk() --> This is to allow reading of data in a secondary node 
+
+Write concern --> The number of replica set members acknowledgement
+
+2 major write concern options are:
+wtimeout <int> --> The time to wait for write concern acknowledgement before marking the operation as failed
+j <true/false> --> Requires the node to commit the write operation to journal before sending the
+acknowledgement 
+
+
+
+
