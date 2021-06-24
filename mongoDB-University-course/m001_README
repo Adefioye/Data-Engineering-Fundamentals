@@ -216,8 +216,14 @@ db.zips.find().sort({ "pop": 1 }).limit(1) --> Sort zips by "pop" field in desce
  
 db.trips.createIndex({ "birth year": 1 }) --> To build index on "birth year" to eeficiently query searches based on 
 "conditionals on birth year"
+--------------------------------------------------------------------------------------------
+UPSERT
+------------------------------
+db.collection.updateOne( { <query to locate> }, { <update> })
 
+Upsert is a hybrid of update and insert
 
+db.collection.updateOne({ <query> }, { <update> }, { "upsert": true })
 
 
 

@@ -133,7 +133,7 @@ db.runCommand( { rolesInfo: { role: "dbOwner", db: "playground" }, showPrivilege
 -------------------------------------------------------------------------------------------
 db.createUser({ "user": "m103-application-user", "pwd": "m103-application-pass", "roles": [{"db": "admin", "role": "readWrite"}  ]})
 
-db.createUser({user:"m103-application-user",pwd:"m103-application-pass",roles:[{db:"admin", role:"readWrite"}]})
+db.createUser({user:"m103-application-user",pwd:"m103-application-pass",roles:[{db:"applicationData", role:"readWrite"}]})
 --------------------------------------------------------------------------------------------------------------------
 MONGO SERVER TOOLS 
 -----------------------------------------------------
@@ -145,6 +145,7 @@ mongoimport --drop --port 27000 -u "m103-application-user" \
 --db applicationData --collection products /dataset/products.json
 --------------------------------------------------------------------------
 flag --drop prevents the existence of duplicate so as not to create the collection twice by running the command twice
+-----------------------------------------------------------------------------------------------------------------------
 
 
 
