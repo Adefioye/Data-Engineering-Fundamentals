@@ -1,0 +1,27 @@
+AGGREGATION PIPELINE 
+------------------------
+Pipeline is a composition of stages. Stage is configurable for transforming and filtering data.
+
+AGGREGATION STRUCTURE & SYNTAX 
+--------------------------------
+db.userCol1.aggregate([{ stage1 }, { stage2 }, { stage3 }], {options})
+
+Field Path: "$fieldName" ("$numOfMoons")
+System Variable: "$$UPPERCASE" ("$$CURRENT")
+User Variable: "$$foo"
+
+Technically, Pipeline is an array of one or more stages. Stages are composed of one or more aggregation operators 
+or expressions. 
+
+db.solarSystem.aggregate([{ $match: { type: { $ne: "Star"}}}]).pretty()
+
+db.solarSystem.aggregate([{ $match: { type: { $ne: "Star"}}}, { $count: "planets"}]).pretty()
+
+KEY THINGS TO REMEMBER ABOUT $match 
+----------------------------------------------
+1. A match stage may contain a $text query operator. but it must be the first stage in a pipeline 
+2. $match should come early in an aggregation pipeline
+3. You cannot use $where with $match 
+4. $match uses the same query syntax as find.  
+ 
+

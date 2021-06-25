@@ -74,7 +74,29 @@ What can we do about spill?
 Quick answer?!, Allocate more memory per worker! This can be set under cluster management.
 
 Other setting related to skew issue above can also be explored.
+--------------------------------------------------------------------------------------------------------------
+SHUFFLE ISSUE 
+---------------------------
+The biggest pain around shuffle is the amount of data that is being moved across the network. 
 
+Here are the tweaks that can be made to solve the problems:
+1. Reduce network IO using larger and fewer workers.
+2. Reduce the amount of data being shuffled.
+3. Denormalize the dataset before performing a JOIN operation. 
 
-
+Shuffle mitigation strategies!
+------------------------------------------------
+1. Broadcast the smaller table 
+    - Using spark.sql.autoBroadcastJoinThreshold
+    - broadcast(tableName)
+    - Best suited for tables ~10MB. 
+2. Pre-shuffle te data with a bucketed dataset 
+3. Employ cost-based optimizer 
+-------------------------------------------------------------------------------------------------
+STORAGE ISSUE 
+--------------------------------------------
+The followings are typical storage problem:
+1. Tiny files 
+2. Scanning 
+3. Schemas, Merging schemas & Schema evolution 
 
