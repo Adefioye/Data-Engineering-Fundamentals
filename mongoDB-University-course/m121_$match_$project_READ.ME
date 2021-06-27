@@ -1,0 +1,244 @@
+AGGREGATION PIPELINE 
+------------------------
+Pipeline is a composition of stages. Stage is configurable for transforming and filtering data.
+
+AGGREGATION STRUCTURE & SYNTAX 
+--------------------------------
+db.userCol1.aggregate([{ stage1 }, { stage2 }, { stage3 }], {options})
+
+Field Path: "$fieldName" ("$numOfMoons")
+System Variable: "$$UPPERCASE" ("$$CURRENT")
+User Variable: "$$foo"
+
+Technically, Pipeline is an array of one or more stages. Stages are composed of one or more aggregation operators 
+or expressions. 
+
+db.solarSystem.aggregate([{ $match: { type: { $ne: "Star"}}}]).pretty()
+
+db.solarSystem.aggregate([{ $match: { type: { $ne: "Star"}}}, { $count: "planets"}]).pretty()
+
+KEY THINGS TO REMEMBER ABOUT $match 
+----------------------------------------------
+1. A match stage may contain a $text query operator. but it must be the first stage in a pipeline 
+2. $match should come early in an aggregation pipeline
+3. You cannot use $where with $match 
+4. $match uses the same query syntax as find.  
+-------------------------------------------------------------------------
+LAB ON $match
+--------------------------
+--> RIGHT 
+pipeline = [{ $match: { $and: [{ "imdb.rating": {$gte: 7}}, { genres: { $nin: ["Crime", "Horror"]}}, { $or: [{ rated: "PG"}, { rated: "G"}]}, { "languages": { $all: ["English", "Japanese"]}}]}}]
+
+--> ALTERNATIVE SOLUTION
+var pipeline = [
+  {
+    $match: {
+      "imdb.rating": { $gte: 7 },
+      genres: { $nin: [ "Crime", "Horror" ] } ,
+      rated: { $in: ["PG", "G" ] },
+      languages: { $all: [ "English", "Japanese" ] }
+    }
+  }
+]
+
+--> WRONG KINDA
+pipeline = [{ $match: { $and: [{ "imdb.rating": {$gte: 7}}, { $not: { $or: [{ genres: "Crime"}, { genres: "Horror"}]}}, { $or: [{ rated: "PG"}, { rated: "G"}]}, { languages: { $all: ["English", "Japanese"]}}]}}]
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+$project
+----------------------------------------
+==> It can be used to remove and retain values
+
+db.solarSystem.aggregate([{ $project: {_id: 0, name: 1}}])
+
+==> Using utility expression to create new fields
+
+db.solarSystem.aggregate([{ 
+    $project: { 
+        _id: 0, 
+        name: 1,
+        myWeight: { $multiply: [{ $divide: ["$gravity.value", 9.8]}, 86]}
+        }
+    }])
+
+Adding $project to the pipeline above
+--------------------------------------------
+var pipeline = [
+  {
+    $match: {
+      "imdb.rating": { $gte: 7 },
+      genres: { $nin: [ "Crime", "Horror" ] } ,
+      rated: { $in: ["PG", "G" ] },
+      languages: { $all: [ "English", "Japanese" ] }
+    }
+  },
+  {
+    $project: {
+        _id: 0,
+        title: 1,
+        rated: 1
+    }  
+  }
+]
+
+==>
+Find a count of the number of movies that have a title composed of one word.
+ To clarify, "Cinderella" and "3-25" should count, where as "Cast Away" would not.
+------------------------------------------------------------------------------------------------------
+
+==> WRONG CODE
+db.movies.aggregate([
+    {
+        $project: {
+            title: 1,
+            title_split: { $split: [ "$title", " " ]}
+        },
+        $match: {
+            title_array: {
+                $filter: {
+                    input: "$title_array",
+                    as: "elem",
+                    cond: { $$elem: { $exists, true}}
+                }
+            }
+
+        }
+    }])
+
+==> RIGHT CODE
+db.movies.find({title: { $not: / /}}).count()
+
+==> RIGHT CODE 
+db.movies.aggregate([
+  {
+    $match: {
+      title: {
+        $type: "string"
+      }
+    }
+  },
+  {
+    $project: {
+      title: { $split: ["$title", " "] },
+      _id: 0
+    }
+  },
+  {
+    $match: {
+      title: { $size: 1 }
+    }
+  }
+]).itcount()
+-----------------------------------------------------------------------------------------------------------
+To use $match to show that field is an array and not empty, the following is used:
+
+{ $match: { writers: { $elemMatch: { $exists: true } } }
+
+To iterate through teh array and perform some transformations we use $map operator as shown below:
+
+writers: {
+  $map: {
+    input: "$writers",
+    as: "writer",
+    in: {
+      $arrayElemAt: [
+        {
+          $split: [ "$$writer", " (" ]
+        },
+        0
+      ]
+    }
+  }
+}
+
+"input" specifies the input data, "as" argument is the name of variable used to iterate over each element 
+in the array. "in" operator allows us to perform operation on each element in the array using $$writer (which is 
+the name of the variable in "as" key of the $arrayElemAt operator)
+----------------------------------------------------------------------------------------------------------------
+Using $setintersection 
+-----------------------------------
+==> Let's find how many movies in our movies collection are a "labor of love", 
+where the same person appears in cast, directors, and writers.
+
+db.movies.aggregate([
+  {
+    $project: {
+      cast: 1,
+      directors: 1,
+      writers: 1
+    }
+  },
+  {
+    $match: {
+      cast: {
+        $type: "array"
+      },
+      directors: {
+        $type: "array"
+      },
+      writers: {
+        $type: "array"
+      }
+    }
+  },
+  {
+    $project: {
+      commonToBoth: { $setIntersection: [ "$cast", "$directors", "$writers"]}
+    }
+  },
+  {
+    $match: {
+      commonToBoth: {  $size: { $gt : 0}}
+    }
+  }
+]).itcount()
+------------------------------------------------------------------------------------------
+==> 
+==> RIGHT ANSWER
+db.movies.aggregate([
+  {
+    $match: {
+      cast: { $elemMatch: { $exists: true } },
+      directors: { $elemMatch: { $exists: true } },
+      writers: { $elemMatch: { $exists: true } }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      cast: 1,
+      directors: 1,
+      writers: {
+        $map: {
+          input: "$writers",
+          as: "writer",
+          in: {
+            $arrayElemAt: [
+              {
+                $split: ["$$writer", " ("]
+              },
+              0
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    $project: {
+      labor_of_love: {
+        $gt: [
+          { $size: { $setIntersection: ["$cast", "$directors", "$writers"] } },
+          0
+        ]
+      }
+    }
+  },
+  {
+    $match: { labor_of_love: true }
+  },
+  {
+    $count: "labors of love"
+  }
+])
+
