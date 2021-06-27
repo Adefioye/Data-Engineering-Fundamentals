@@ -1,0 +1,157 @@
+Using $addFields 
+--------------------------------------------
+db.solarSystem.aggregate([
+ {
+    $project: {
+      _id: 0,
+      name: 1,
+      gravity: 1,
+      mass: 1,
+      radius: 1,
+      sma: 1
+    }
+    },
+    {
+    $addFields: {
+      gravity: "$gravity.value",
+      mass: "$mass.value",
+      radius: "$radius.value",
+      sma" "$sma.value"
+        }
+    }
+]).pretty()
+
+----------------------------------------------------------------------
+$geoNear 
+-----------------
+db.nycFacilities.aggregate([{
+    $geoNear: {
+      near: {
+        type: "Point",
+        coordinates: [-73.98, 40.75]
+      },
+      distanceField: "distanceFromMongoDB",
+      spherical: true,
+      query: { type: "Hospital"},
+      limit: 5
+    }
+}]).pretty()
+
+----------------------------------------------------------------------------
+CURSOR-LIKE STAGES 
+------------------------------
+$limit: { <integer> }
+$skip: { <integer> }
+$count: { <name we want the count called> }
+$sort: { <field to sort on>: <integer, direction to sort>} 
+
+--> $sort can take advantage of indexes if used early in a pipeline
+
+--> By default, $sort will only use up 100MB of RAM. Setting allowDiskUse: true; will allow for larger sorts 
+
+------------------------------------------------------------------------------------------------
+For random selection of documents in a collection, $sample is used...
+
+To use { $sample: { size: <N, how many documents>} }, a variety of conditions must be met:
+--> N <= 5% of documents in collection and
+--> N > 100 documents and
+--> $sample must be the first stage in our aggregation pipeline 
+
+-------------------------------------------------------------------------------------------------------
+==> Return the 25th element1.  of the cursor result for the documents that meet the following conditions:
+1. tomatoes.viewer.rating > 3
+2. country is USA 
+3. cast is in ["Sandra Bullock", "Tom Hanks", "Julia Roberts", "Kevin Spacey", "George Clooney"]
+
+==> ANSWER is found below
+
+db.movies.aggregate([
+  {
+    $match: {
+      countries: { $in: ["USA"]},
+      "tomatoes.viewer.rating": { $gte: 3},
+      cast: { $in: ["Sandra Bullock", "Tom Hanks", "Julia Roberts", "Kevin Spacey", "George Clooney"]}
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      cast: 1,
+      "tomatoes.viewer.rating": 1,
+      title: 1
+    }
+  },
+  {
+    $addFields: {
+      num_favs: {
+        $size: { $setIntersection: [ ["Sandra Bullock", "Tom Hanks", "Julia Roberts", "Kevin Spacey", "George Clooney"], "$cast"] }
+      }
+    }
+  },
+  {
+    $sort: {
+    num_favs: -1,
+    "tomatoes.viewer.rating": -1,
+    title: -1
+    }
+  },
+  {
+    $skip: 24
+  },
+  {
+    $limit: 1
+  }
+]).pretty()
+
+
+favorites = ["Sandra Bullock", "Tom Hanks", "Julia Roberts", "Kevin Spacey", "George Clooney"]
+
+==>
+Calculate an average rating for each movie in our collection where English is an available language, 
+the minimum imdb.rating is at least 1, the minimum imdb.votes is at least 1, and it was released in 1990 or after
+
+db.movies.aggregate([
+  {
+    $match: {
+      languages: { $in: ["English"]},
+      "imdb.rating": { $gte: 1},
+      "imdb.votes": { $gte: 1},
+      year: { $gte: 1}
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      title: 1,
+      "imdb.votes": 1
+    }
+  },
+  {
+    $addFields: {
+      normalized_rating: {
+        {
+          $add: [
+      1,
+      {
+        $multiply: [
+          9,
+          {
+            $divide: [
+              { $subtract: [<x>, <x_min>] },
+              { $subtract: [<x_max>, <x_min>] }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+      }
+    }
+  },
+  {
+    $sort: {normalized_rating: 1}
+  },
+  {
+    $limit: 1
+  }
+]).pretty()
