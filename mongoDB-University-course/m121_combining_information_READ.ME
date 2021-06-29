@@ -1,0 +1,308 @@
+$group stage 
+----------------------------------------
+Syntax: { 
+    $group: { 
+        _id: <matching/grouping criteria>,
+        fieldName: <accumulator expression>
+        }
+    } 
+EXAMPLE of using $group:
+-------------------------------------
+db.movies.aggregate([
+    {
+      $group: {
+        _id: "$year",
+        num_films_in_year: { $sum: 1}
+      }
+    }
+])
+==>
+
+db.movies.aggregate([
+  {
+    $group: {
+      _id: {
+          numDirectors: {$cond: [ { $isArray: "$directors"}, { $size: "$directors"}, 0]}
+          },
+      numFilms: { $sum: 1},
+      averageMetacritic: { $avg: "$metacritic"}
+    }
+  },
+  {
+    $sort: {
+      "_id.numDirectors": -1
+    }
+  }
+])
+==>
+
+To group all documents in the movies collection, we use the following:
+
+db.movies.aggregate([
+  {
+    $group: {
+      _id: null,
+      count: { $sum: 1}
+    }
+  }
+])
+
+-----------------------------------------------------------------------------------------------------
+ACCUMULATOR STAGES with $project 
+----------------------------------------
+Accumulator expressions in $project operate over an array in the current document. they do not carry values over all 
+documents. 
+
+db.icecream_data.aggregate([
+  {
+    $project: {
+      _id: 0,
+      max_high_tmp: {
+        $reduce: {
+          input: "$trends",
+          initialValue: -Infinity,
+          in: {
+            $cond: [
+              { $gt: ["$$this.avg_high_tmp", "$$value"]},
+              "$$this.avg_high_tmp",
+              "$$value"
+            ]
+          }
+        }
+      }
+    }
+  }
+])
+
+==> The verbose code above can be simplified using accumulator expression in $project 
+
+db.icecream_data.aggregate([
+  {
+    $project: { _id: null, max_high_tmp: { $max: "$trends.avg_high_tmp"}}
+  }
+])
+
+==> LAB CODE ANSWER:
+
+db.movies.aggregate([
+  {
+    $match: {
+      awards: { $regex: /Won \d{1,2} Oscars?/},
+      "imdb.rating": { $gt: 0}
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      highest_rating: { $max: "$imdb.rating"},
+      lowest_rating: { $min: "$imdb.rating"},
+      average_rating: { $avg: "$imdb.rating"},
+      deviation: { $stdDevSamp: "$imdb.rating"}
+    }
+  }
+]).pretty()
+
+db.movies.aggregate([
+  {
+    $match: {
+      awards: { $regex: /Won (1|13) Oscars?/},
+      "imdb.rating": { $gt: 0}
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      "imdb.rating": 1,
+      awards: 1
+    }
+  }
+]).pretty()
+
+==>
+Using UNWIND:
+
+db.movies.aggregate([
+  {
+    $match: {
+      languages: { $in: ["English"]}
+    }
+  },
+  {
+    $project: {
+        _id: 0,
+        cast: 1,
+        "imdb.rating": 1
+    }
+  },
+  {
+    $unwind: "$cast"
+  },
+  {
+    $group: {
+      _id: "$cast",
+      numFilms: { $sum: 1},
+      avgRating: { $avg: "$imdb.rating"}
+    }
+  },
+  {
+    $project: {
+      numFilms: 1,
+      average: { $trunc: ["$avgRating", 1]}
+    }
+  },
+  {
+    $sort: {
+      numFilms: -1
+    }
+  },
+  {
+    $limit: 1
+  }
+]).pretty()
+---------------------------------------------------------------------------------------------
+$lookup stage 
+---------------------------
+Syntax -->
+
+$lookup is effectively a LEFT-OUTER JOIN 
+$lookup: {
+  from: <collection to join>,
+  localField: <field from the input documents>,
+  foreignField: <field from the documents of the "from" collections>,
+  as: <output array field>
+}
+
+The following conditions must be true for the $lookup stage to be successful:
+1. The "from" collection canniot be sharded
+2. The "from" collection should be in thne same database 
+3. The values in localField and foreignField are matched on equality 
+4. "as" option can be any name, if it exists in the document, that field can be overwritten.
+
+==>
+db.air_alliances.aggregate([
+  {
+    $lookup: {
+      from: "air_airlines",
+      localField: "airlines",
+      foreignField: "name",
+      as: "airlines"
+    }
+  }
+]).pretty()
+
+==>
+Which alliance from air_alliances flies the most routes with either a Boeing 747 or an Airbus A380 
+(abbreviated 747 and 380 in air_routes)?
+----------------------------------------------------------------------------
+
+db.air_alliances.aggregate([
+  {
+    $lookup: {
+      from: "air_routes",
+      localField: "airlines",
+      foreignField: "airline.name",
+      as: "airlines"
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      name: 1,
+      "airlines.airplane": 1
+    }
+  },
+  {
+    $unwind: "$airlines"
+  },
+  {
+    $match: {
+      "airlines.airplane": { $in: ["737", "380"]}
+    }
+  },
+  {
+    $group: {
+      _id: "$name",
+      numRoutes: { $sum: 1}
+    }
+  },
+  {
+    $sort: { numRoutes: -1}
+  },
+  {
+    $limit: 1
+  }
+]).pretty()
+
+--------------------------------------------------------------------------------------------
+$graphLookup
+------------------
+$graphLookup: {
+  from: <collection to search from>,
+  startWith: <value of connectFromField to start recursive search>,
+  connectFromField: <value used to recursively search against the connectToField>,
+  as: <field name for result array>,
+  connectToField: <field name from "from" collection that is recursively match against>,
+  maxDepth: <optionally used to sepcify the depth of recursive search>,
+  depthField: <field added to each traversed document along the recursive search path>,
+  restrictSearchWithMatch: <filtering the output of recursive search>
+}
+
+EXAMPLE:
+-------------------------
+
+To get those reporting to Eliot
+---------------------------------------------
+db.parent_reference.aggregate([
+  {
+    $match: {
+      name: "Eliot"
+    }
+  },
+  {
+    $graphLookup: {
+      from: "parent_reference",
+      startWith: "$_id",
+      connectFromField: "_id",
+      connectToField: "reports_to",
+      as: "all_reports"
+    }
+  }
+]).pretty()
+
+To get those Shannon report to..
+--------------------------------------------------------------
+db.parent_reference.aggregate([
+  {
+    $match: {
+      name: "Shannon"
+    }
+  },
+  {
+    $graphLookup: {
+      from: "parent_reference",
+      startWith: "$reports_to",
+      connectFromField: "reports_to",
+      connectToField: "_id",
+      as: "bosses"
+    }
+  }
+]).pretty()
+
+---------------------------
+db.child_reference.aggregate([
+  {
+    $match: {
+      name: "Dev"
+    }
+  },
+  {
+    $graphLookup: {
+      from: "child_reference",
+      startWith: "$direct_reports",
+      connectFromField: "direct_reports",
+      connectToField: "name",
+      as: "all_reports"
+    }
+  }
+]).pretty()
+
