@@ -1,0 +1,162 @@
+$facet
+-----------------------
+
+{'$bucket': { 'groupBy': '$field2', 'boundaries': [ "a", "asdas", "z" ], 'default': 'Others'}}
+--------------------------------------------------------------------------------------------------
+db.companies.aggregate([
+  {
+    $match: {
+      $text: { $search: "Databases"}
+    }
+  },
+  {
+    $facet: {
+      Categories: [{ $sortByCount: "$category_code"}],
+      Employees: [
+        {$match: { founded_year: { $gt: 1980}}},
+        {$bucket: {
+          groupBy: "$number_of_employees",
+          boundaries: [0, 20, 50, 100, 500, 1000, Infinity],
+          default: "Other"
+        }}
+      ],
+      Founded: [
+        { $match: {"offices.city": "New York"}},
+        { $bucketAuto: {
+           groupBy: "$founded_year",
+           buckets: 5
+        }}
+      ]
+    }
+  }
+])
+
+======>
+
+How many movies are in both the top ten highest rated movies according to the imdb.rating and the metacritic fields?
+We should get these results with exactly one access to the database
+
+db.movies.aggregate([
+  {
+    $facet: {
+      imdb_rating: [
+        { $project: {
+           _id: 0,
+           title: 1,
+           "imdb.rating": 1
+        }},
+        { $match: {"imdb.rating": { $ne: ""}}},
+        { $sort: {"imdb.rating": -1, "title": -1}},
+        { $limit: 10}
+      ],
+      metacritic_rating: [
+        { $project: {
+           _id: 0,
+           title: 1,
+           metacritic: 1
+        }},
+        {$match: {"metacritic": { $ne: ""}}},
+        {$sort: { metacritic: -1, title: -1}},
+        {$limit: 10}
+      ]
+    }
+  }
+]).pretty()
+
+
+db.movies.aggregate([
+  {
+    $facet: {
+      imdb_rating: [
+        { $project: {
+           _id: 0,
+           title: 1,
+           "imdb.rating": 1
+        }},
+        { $match: {"imdb.rating": { $ne: ""}}},
+        { $sort: {"imdb.rating": -1, title: 1}},
+        { $limit: 10}
+      ],
+      metacritic_rating: [
+        { $project: {
+           _id: 0,
+           title: 1,
+           metacritic: 1
+        }},
+        {$match: {"metacritic": { $ne: ""}}},
+        {$sort: { metacritic: -1, title: 1}},
+        {$limit: 10}
+      ]
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      "imdb_rating.title": 1,
+      "metacritic_rating.title": 1,
+      commonTitle: { $setIntersection: ["$imdb_rating.title", "$metacritic_rating.title"]}
+    }
+  }
+]).pretty()
+
+===>
+
+db.movies.aggregate([
+  {
+    $match: {
+      metacritic: { $gte: 0 },
+      "imdb.rating": { $gte: 0 }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      metacritic: 1,
+      imdb: 1,
+      title: 1
+    }
+  },
+  {
+    $facet: {
+      top_metacritic: [
+        {
+          $sort: {
+            metacritic: -1,
+            title: 1
+          }
+        },
+        {
+          $limit: 10
+        },
+        {
+          $project: {
+            title: 1
+          }
+        }
+      ],
+      top_imdb: [
+        {
+          $sort: {
+            "imdb.rating": -1,
+            title: 1
+          }
+        },
+        {
+          $limit: 10
+        },
+        {
+          $project: {
+            title: 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    $project: {
+      movies_in_both: {
+        $setIntersection: ["$top_metacritic", "$top_imdb"]
+      }
+    }
+  }
+])
