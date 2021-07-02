@@ -1,0 +1,84 @@
+$redact
+------------
+$redact results in $$DESCEND, $$PRUNE, and $$KEEP
+
+$redact restricts the contents of the documents based on the information stored in the documents
+themselves.
+$$DESCEND --> Returns fields in current document level excluding embedded document
+$$PRUNE --> Removes fields at the document level without further inspection
+$$KEEP --> Retains fields at teh docuement level without further inspection
+
+In summary, $$PRUNE and $$KEEP automatically apply to all levels below the evaluated level.
+$$DESCEND retains then current level and evaluates the next level down. Lastly, $redact is not for
+restricting access to document.
+
+EXAMPLE
+-------------------
+
+==> INCORRECT WHY? Dont know yet!
+db.employees.aggregate([
+  {
+    $redact: {
+      $cond: { if: { userAccess: { $in: "$acl"}}, then: "$$DESCEND", else: "$$PRUNE"}
+    }
+  }
+]).pretty()
+
+==>
+db.employees.aggregate([
+  {
+    $redact: { $cond: [{ $in: [userAccess, "$acl"]}, "$$DESCEND", "$$PRUNE"]}
+  }
+]).pretty()
+--------------------------------------------------------------------------------
+$out stage
+-----------
+Syntax --> { $out: <output_collection>}
+
+$out must be then last stage in an aggregation pipeline. Hence cannot be used in a $facet stage.
+.$ out honor indexes on existing collection. 
+-----------------------------------------------------------------
+$merge stage
+-------------------
+This is similar to $out stage but with more capabilities as shown below:
+-- It can accept sharded/ unsharded collection
+-- it can be written to same or different db
+-- It can also be written to an existing collection without overwriting it. In this case, data is 
+written to existing collection.
+
+Syntax
+-----------
+{ $merge: <collection_name>} --> Writing intp same db 
+{ $merge: { db: "db2", coll: <collection_name>}} --> Writing into collection on a different db 
+
+To merge into another collection, the syntax below is used..
+
+{ $merge: {
+    into: <target>,
+    on: <field>
+}}
+
+If "on" option is not specified:
+"on" defaults to _id field for unsharded collection. 
+However "on" defaults to [_id, "shardkey(s)"] for sharded collection 
+
+If "on" field(s) is/are specified, they have to have unique index on them 
+
+More merge synrax option 
+---------------------------
+{
+    $merge: {
+        into: <target>:
+        whenNotMatched: "insert"|"discard"|"fail"
+        whenMatched: "merge"|"replace"|"keepExisting"|"fail"
+    }
+}
+
+----------------------------------------------------------------------------
+Creating VIEWS
+------------------------------
+db.createView(<view_name>, <source_collection, <aggregation_pipeline>, <collation>)
+
+To find views use --> db.system.views.find().pretty()
+
+
