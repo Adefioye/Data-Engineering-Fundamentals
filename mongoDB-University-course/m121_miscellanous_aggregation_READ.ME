@@ -81,4 +81,70 @@ db.createView(<view_name>, <source_collection, <aggregation_pipeline>, <collatio
 
 To find views use --> db.system.views.find().pretty()
 
+--------------------------------------------------------------------------------------------------------
+var pipeline = [{
+    "$project": {
+      "surname_capital": { "$substr": [{"$arrayElemAt": [ {"$split": [ "$name", " " ] }, 1]}, 0, 1 ] },
+      "name_size": {  "$add" : [{"$strLenCP": "$name"}, -1]},
+      "name": 1
+    }
+  },
+  {
+    "$group": {
+      "_id": "$name_size",
+      "word": { "$push": "$surname_capital" },
+      "names": {"$push": "$name"}
+    }
+  },
+  {
+    "$project": {
+      "word": {
+        "$reduce": {
+          "input": "$word",
+          "initialValue": "",
+          "in": { "$concat": ["$$value", "$$this"] }
+        }
+      },
+      "names": 1
+    }
+  },
+  {
+    "$sort": { "_id": 1}
+  }
+]
 
+=====>
+
+db.air_routes.aggregate([
+  {
+    $match: {
+      src_airport: { $in: ["LHR", "JFK"] },
+      dst_airport: { $in: ["LHR", "JFK"] }
+    }
+  },
+  {
+    $lookup: {
+      from: "air_alliances",
+      foreignField: "airlines",
+      localField: "airline.name",
+      as: "alliance"
+    }
+  },
+  {
+    $match: { alliance: { $ne: [] } }
+  },
+  {
+    $addFields: {
+      alliance: { $arrayElemAt: ["$alliance.name", 0] }
+    }
+  },
+  {
+    $group: {
+      _id: "$airline.id",
+      alliance: { $first: "$alliance" }
+    }
+  },
+  {
+    $sortByCount: "$alliance"
+  }
+])
