@@ -1,0 +1,1 @@
+command &> filename --> This redirects the stderr and stdout of command to the filename

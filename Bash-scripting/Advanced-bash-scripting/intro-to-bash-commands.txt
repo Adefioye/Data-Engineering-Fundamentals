@@ -35,5 +35,8 @@ $# : gives the number of arguments
 
 cat hire_data/*.csv | grep $1 > $1.csv ==> Use to extract subset of data with "cityname" passed
 as first argument to extract data with the "cityname".
+-------------------------------------------------------------------------------------------------
+HERRIOT-WATT-UNIX-COURSE
+------------------------
 
 
