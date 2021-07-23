@@ -37,6 +37,76 @@ cat hire_data/*.csv | grep $1 > $1.csv ==> Use to extract subset of data with "c
 as first argument to extract data with the "cityname".
 -------------------------------------------------------------------------------------------------
 HERRIOT-WATT-UNIX-COURSE
-------------------------
+--------------------------------------------------------------------------------------------
+TODAY=`date`; echo "today is $TODAY"
+
+Backquotes may be used inside weak quotes
+------------------------------------------
+weak quote is ""
+strong quote is ''
+
+To check running processes, use:
+
+ps -f 
+ps -e 
+
+ps --> This prints out result on running processes
+
+grep -v regexp file --> Matches lines not containing the regexp
+
+grep -i regexp file --> For case independent matching 
+
+grep -l regexp * --> To list all the files containing regexp 
+
+grep -E --> Useful for full pattern matching(Allows for more complicated regex)
+-----------------------------------------------------------------------------------------------------
+SED (stream editor)
+-------------------------------
+sed 2d file --> This outputs the file while deleting the 2nd line. "d" stands for delete 
+
+sed '/splodge/d' chart --> This outputs content of "chart" file while deleting lines containing splodge 
+
+sed '10,20d' chart --> This omits line 10-20 inclusive in the output 
+
+sed '/^hello/,/^bye/d' chart --> This omits lines between the lines that begin with "hello" and "bye"
+------------------------------------------------------------------------------------------------------------
+SED SUBSTITUTION
+---------------------------
+Syntax:
+
+sed 's/regexp/replacement/flags' file 
+
+flag "g" --> This means substituting every occurence in the file 
+
+-------------------------------------------------------------------------------------
+AWK
+------------------
+AWK is a pattern matchinf programming language. 
+
+awk '{print $1}' --> Used to select fields
+
+awk -F: '{print $1 "lives at" $2}' bills --> This sets field separator to colon 
+
+awk -F, ’/^[Tt]oast/ { print $1 "costs" $NF }’ menu --> Can also used regular expression 
+
+find searches through a directory tree for files or directories which match the expression 
+
+grep Tom cats | sed 's/Tom/Top/' | awk '{print $1 $NF}' | sort -k 2 
+
+du | cut -f 1 | paste -sd+ | bc  =--> TO compute data disk block usage in the current directory (Other directories
+can be passed as argument)
+
+tar --> This is an archiving utility. More like zipping contents of file together 
+
+tar cvf distribution.tar src bin license/* --> This is used for creating the "distribution.tar" file with contents 
+like "src, bin and license file". The flag "c" = create; "v" = verbose; and "f" = file provided as argument.
+
+tar tvf distribution.tar --> This shows the files content(flag "t" is alias for table of content)
+
+tar xvf distribution.tar --> To extract the content of the file 
+
+
+
+
 
 
