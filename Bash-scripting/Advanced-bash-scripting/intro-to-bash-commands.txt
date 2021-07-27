@@ -105,6 +105,12 @@ tar tvf distribution.tar --> This shows the files content(flag "t" is alias for 
 
 tar xvf distribution.tar --> To extract the content of the file 
 
+------------------------------------------------------------------------------------------------------
+\c --> This keeps the cursor on the same line after applying echo. To enable it flag "-e"
+must be passed to echo
+
+
+
 
 
 
