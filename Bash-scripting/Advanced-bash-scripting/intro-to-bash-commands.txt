@@ -109,6 +109,21 @@ tar xvf distribution.tar --> To extract the content of the file
 \c --> This keeps the cursor on the same line after applying echo. To enable it flag "-e"
 must be passed to echo
 
+printf "%w.pL\n" $varname
+
+where w = minimum field width
+      p = precision
+      L = conversion character 
+
+echo "Path is $PATH" --> Shell variable expandable in double quotes 
+echo 'Path is $PATH' --> Shell variable not expandable in single quotes 
+
+unset --> FOr deleting variables during program execution 
+
+read -s -p "Enter Password  : " my_password --> flag "-s" ensures that input is not displayed on the screen 
+
+$IFS --> (a.k.a internal field separator, this determines how the shell recognizes the fields)
+
 
 
 

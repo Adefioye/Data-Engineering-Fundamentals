@@ -1,0 +1,17 @@
+To install amazon_CLI_v2
+---------------------------------------
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+To make system aware that sensitive information are stored in the folders below:
+--------------------------------------------------------------------------------
+export AWS_CONFIG_FILE=~/.aws/config                                                                       ✘ 252
+export AWS_SHARED_CREDENTIALS_FILE=~/.aws/credentials
+
+Launching and executing services in aws has the following general syntax:
+-------------------------------------------------------------------------
+aws [option] <command> <sub-command> [params]
+
+--filter option is useful to limit the stdout stream 
+--query work for filtering and works on almost all aws <sub-commands>
